@@ -1,9 +1,3 @@
-/*
-  DIY Gimbal - MPU6050 Arduino Tutorial
-  by Dejan, www.HowToMechatronics.com
-  Code based on the MPU6050_DMP6 example from the i2cdevlib library by Jeff Rowberg:
-  https://github.com/jrowberg/i2cdevlib
-*/
 // I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
 // for both classes must be in the include path of your project
 #include "I2Cdev.h"
@@ -16,7 +10,7 @@
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
 #endif
-#include <Servo.h>
+#include "Servo.h"
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for SparkFun breakout and InvenSense evaluation board)
@@ -93,15 +87,18 @@ void setup() {
   pinMode(INTERRUPT_PIN, INPUT);
   devStatus = mpu.dmpInitialize();
   // supply your own gyro offsets here, scaled for min sensitivity
-  mpu.setXGyroOffset(17);
-  mpu.setYGyroOffset(-69);
-  mpu.setZGyroOffset(27);
-  mpu.setZAccelOffset(1551); // 1688 factory default for my test chip
+  mpu.setXGyroOffset(-56);
+  mpu.setYGyroOffset(24);
+  mpu.setZGyroOffset(64);
+  mpu.setZAccelOffset(3403); // 1688 factory default for my test chip
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
     // turn on the DMP, now that it's ready
     // Serial.println(F("Enabling DMP..."));
+    //mpu.CalibrateAccel(6);
+    //mpu.CalibrateGyro(6);
+    //mpu.PrintActiveOffsets();
     mpu.setDMPEnabled(true);
 
     attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
@@ -178,12 +175,12 @@ void loop() {
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-    Serial.print(ypr[0]);
-
     // Yaw, Pitch, Roll values - Radians to degrees
     ypr[0] = ypr[0] * 180 / M_PI;
     ypr[1] = ypr[1] * 180 / M_PI;
     ypr[2] = ypr[2] * 180 / M_PI;
+    
+    Serial.print(ypr[0]);
     
     // Skip 300 readings (self-calibration process)
     if (j <= 300) {
